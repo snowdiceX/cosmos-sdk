@@ -1,9 +1,55 @@
 package main
 
 import (
-	"github.com/nlopes/slack"
+	"fmt"
 	"log"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/nlopes/slack"
 )
+
+func pushLogs() string{
+	svc := s3.New(session.Must(session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1"),
+	})))
+
+	input := &s3.ListBucketsInput{}
+
+	result, err := svc.ListBuckets(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+	}
+
+	return result.String()
+}
+
+func slackMessage(token string, channel string, threadTS *string, message string) {
+	client := slack.New(token)
+	if threadTS != nil {
+		_, _, err := client.PostMessage(channel, slack.MsgOptionText(message, false), slack.MsgOptionTS(*threadTS))
+		if err != nil {
+			log.Printf("ERROR: %v", err)
+		}
+	} else {
+		_, _, err := client.PostMessage(channel, slack.MsgOptionText(message, false))
+		if err != nil {
+			log.Printf("ERROR: %v", err)
+		}
+	}
+
+}
 
 //type GithubPayload struct {
 //	Issue struct {
@@ -31,22 +77,6 @@ import (
 //		Sha string `json:"sha"`
 //	} `json:"head"`
 //}
-
-func slackMessage(token string, channel string, threadTS *string, message string) {
-	client := slack.New(token)
-	if threadTS != nil {
-		_, _, err := client.PostMessage(channel, slack.MsgOptionText(message, false), slack.MsgOptionTS(*threadTS))
-		if err != nil {
-			log.Printf("ERROR: %v", err)
-		}
-	} else {
-		_, _, err := client.PostMessage(channel, slack.MsgOptionText(message, false))
-		if err != nil {
-			log.Printf("ERROR: %v", err)
-		}
-	}
-
-}
 
 //func createCheckRun(client *github.Client, payload GithubPayload, pr PullRequestDetails) error {
 //	var opt github.CreateCheckRunOptions

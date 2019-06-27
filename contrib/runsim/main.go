@@ -205,6 +205,7 @@ wait:
 			seedStrings[i] = fmt.Sprintf("%d", seed)
 		}
 		slackMessage(slackToken, slackChannel, &slackThread, fmt.Sprintf("Finished running simulation for seeds: %s", strings.Join(seedStrings, " ")))
+		slackMessage(slackToken, slackChannel, &slackThread, pushLogs())
 	}
 	os.Exit(0)
 }
