@@ -4,26 +4,20 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
-	"github.com/cosmos/cosmos-sdk/x/ibc/23-commitment/merkle"
 )
 
-func newRoot() merkle.Root {
-	return merkle.NewRoot(nil, [][]byte{[]byte("test")}, []byte{0x12, 0x34})
-}
-
 func testUpdate(t *testing.T, interval int, ok bool) {
-	node := NewNode(NewMockValidators(100, 10))
+	node := NewNode(NewMockValidators(100, 10), NewRoot([]byte("qwertyuiop")))
 
 	node.Commit()
 
-	verifier := node.LastStateVerifier(newRoot())
+	verifier := node.LastStateVerifier()
 
 	for i := 0; i < 100; i++ {
 		header := node.Commit()
 
 		if i%interval == 0 {
-			err := verifier.Validate(header, node.PrevValset, node.Valset)
+			err := verifier.Validate(header)
 			if ok {
 				require.NoError(t, err)
 			} else {
