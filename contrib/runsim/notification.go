@@ -1,8 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -11,28 +12,52 @@ import (
 	"github.com/nlopes/slack"
 )
 
-func pushLogs() string{
-	svc := s3.New(session.Must(session.NewSession(&aws.Config{
-		Region: aws.String("us-east-1"),
+const (
+	logBucketPrefix = "sim-logs-"
+	awsRegion       = "us-east-1"
+)
+
+func awsErrHandler(err error) {
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch awsErr.Code() {
+		default:
+			log.Println(awsErr.Error())
+		}
+	} else {
+		log.Println(err.Error())
+	}
+}
+
+func pushLogs(stdOut *os.File, stdErr *os.File) {
+	var logBucket *string
+
+	sessionS3 := s3.New(session.Must(session.NewSession(&aws.Config{
+		Region: aws.String(awsRegion),
 	})))
-
-	input := &s3.ListBucketsInput{}
-
-	result, err := svc.ListBuckets(input)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			default:
-				fmt.Println(aerr.Error())
+	if listBucketsOutput, err := sessionS3.ListBuckets(&s3.ListBucketsInput{}); err != nil {
+		awsErrHandler(err)
+	} else {
+		for _, bucket := range listBucketsOutput.Buckets {
+			if strings.Contains(*bucket.Name, logBucketPrefix) {
+				logBucket = bucket.Name
 			}
-		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			fmt.Println(err.Error())
 		}
 	}
 
-	return result.String()
+	if logBucket == nil {
+		log.Println("Log bucket not found")
+	}
+
+	stdOutObjInput := &s3.PutObjectInput{
+		Body:   aws.ReadSeekCloser(stdOut),
+		Bucket: aws.String(*logBucket),
+		Key:    aws.String("gitHash/" + stdOut.Name()),
+	}
+	if output, err := sessionS3.PutObject(stdOutObjInput); err != nil {
+		awsErrHandler(err)
+	} else {
+		log.Printf("Log file pushed: %s", output.String())
+	}
 }
 
 func slackMessage(token string, channel string, threadTS *string, message string) {
@@ -48,7 +73,6 @@ func slackMessage(token string, channel string, threadTS *string, message string
 			log.Printf("ERROR: %v", err)
 		}
 	}
-
 }
 
 //type GithubPayload struct {
