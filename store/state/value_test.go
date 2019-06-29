@@ -14,7 +14,7 @@ type valuepair struct {
 
 func TestValue(t *testing.T) {
 	key, ctx, cdc := defaultComponents()
-	base := NewBase(cdc, key)
+	base := NewBase(cdc, key, nil)
 
 	cases := make([]valuepair, testsize)
 	for i := range cases {
