@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -28,7 +29,22 @@ func awsErrHandler(err error) {
 	}
 }
 
-func pushLogs(stdOut string, stdErr string) {
+func putObj(fileHandle *os.File, svc *s3.S3, folderName string, bucketName string) {
+	_, _ = fileHandle.Seek(0, 0)
+
+	stdOutObjInput := &s3.PutObjectInput{
+		Body:   aws.ReadSeekCloser(fileHandle),
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(folderName + "/" + filepath.Base(fileHandle.Name())),
+	}
+	if output, err := svc.PutObject(stdOutObjInput); err != nil {
+		awsErrHandler(err)
+	} else {
+		log.Printf("Log file pushed: %s", output.String())
+	}
+}
+
+func pushLogs(stdOut *os.File, stdErr *os.File, folderName string) {
 	var logBucket *string
 
 	sessionS3 := s3.New(session.Must(session.NewSession(&aws.Config{
@@ -40,25 +56,14 @@ func pushLogs(stdOut string, stdErr string) {
 		for _, bucket := range listBucketsOutput.Buckets {
 			if strings.Contains(*bucket.Name, logBucketPrefix) {
 				logBucket = bucket.Name
+				putObj(stdOut, sessionS3, folderName, *logBucket)
+				putObj(stdErr, sessionS3, folderName, *logBucket)
+				break
 			}
 		}
 	}
-
 	if logBucket == nil {
 		log.Println("Log bucket not found")
-	}
-
-	stdOutFile, _ := os.OpenFile(stdOut,os.O_RDWR, 755)
-
-	stdOutObjInput := &s3.PutObjectInput{
-		Body:   aws.ReadSeekCloser(stdOutFile),
-		Bucket: aws.String(*logBucket),
-		Key:    aws.String("gitHash/" + stdOut),
-	}
-	if output, err := sessionS3.PutObject(stdOutObjInput); err != nil {
-		awsErrHandler(err)
-	} else {
-		log.Printf("Log file pushed: %s", output.String())
 	}
 }
 
