@@ -251,7 +251,7 @@ func worker(id int, seeds <-chan int) {
 	log.Printf("[W%d] no seeds left, shutting down", id)
 }
 
-func spawnProc(workerID int, seed int) (*os.File, *os.File, error) {
+func spawnProc(workerID int, seed int) (string, string, error) {
 	stderrFile, _ := os.Create(filepath.Join(tempdir, makeFilename(seed)+".stderr"))
 	stdoutFile, _ := os.Create(filepath.Join(tempdir, makeFilename(seed)+".stdout"))
 	s := buildCommand(testname, blocks, period, genesis, seed)
@@ -265,7 +265,7 @@ func spawnProc(workerID int, seed int) (*os.File, *os.File, error) {
 	} else {
 		stderr, err = cmd.StderrPipe()
 		if err != nil {
-			return nil, nil, err
+			return "", "", err
 		}
 	}
 	sc := bufio.NewScanner(stderr)
@@ -273,7 +273,7 @@ func spawnProc(workerID int, seed int) (*os.File, *os.File, error) {
 	err = cmd.Start()
 	if err != nil {
 		log.Printf("couldn't start %q", s)
-		return nil, nil, err
+		return "", "", err
 	}
 	log.Printf("[W%d] Spawned simulation with pid %d [seed=%d stdout=%s stderr=%s]",
 		workerID, cmd.Process.Pid, seed, stdoutFile.Name(), stderrFile.Name())
@@ -289,7 +289,7 @@ func spawnProc(workerID int, seed int) (*os.File, *os.File, error) {
 			fmt.Printf("stderr: %s\n", sc.Text())
 		}
 	}
-	return stdoutFile, stderrFile, err
+	return stdoutFile.Name(), stderrFile.Name(), err
 }
 
 func pushProcess(proc *os.Process) {

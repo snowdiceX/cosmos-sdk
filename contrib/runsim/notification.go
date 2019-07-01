@@ -28,7 +28,7 @@ func awsErrHandler(err error) {
 	}
 }
 
-func pushLogs(stdOut *os.File, stdErr *os.File) {
+func pushLogs(stdOut string, stdErr string) {
 	var logBucket *string
 
 	sessionS3 := s3.New(session.Must(session.NewSession(&aws.Config{
@@ -48,10 +48,12 @@ func pushLogs(stdOut *os.File, stdErr *os.File) {
 		log.Println("Log bucket not found")
 	}
 
+	stdOutFile, _ := os.OpenFile(stdOut,os.O_RDWR, 755)
+
 	stdOutObjInput := &s3.PutObjectInput{
-		Body:   aws.ReadSeekCloser(stdOut),
+		Body:   aws.ReadSeekCloser(stdOutFile),
 		Bucket: aws.String(*logBucket),
-		Key:    aws.String("gitHash/" + stdOut.Name()),
+		Key:    aws.String("gitHash/" + stdOut),
 	}
 	if output, err := sessionS3.PutObject(stdOutObjInput); err != nil {
 		awsErrHandler(err)
