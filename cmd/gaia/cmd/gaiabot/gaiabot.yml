@@ -1,0 +1,14 @@
+# gaiabot
+# cosmos mainnet cosmoshub-2
+
+ticker: 30000
+
+node: tcp://localhost:26657
+
+chain_id: cosmoshub-2
+
+validator_address: xxxxxx
+
+delegator_address: xxx
+
+secure_wallet_address: xxxxxx
