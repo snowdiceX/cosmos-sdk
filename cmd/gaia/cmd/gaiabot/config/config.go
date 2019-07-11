@@ -33,6 +33,14 @@ type Config struct {
 	DelegatorAddress string `yaml:"delegator_address,omitempty"`
 
 	WalletAddress string `yaml:"secure_wallet_address,omitempty"`
+
+	Amount int64 `yaml:"amount,omitempty"`
+
+	Reserve int64 `yaml:"reserve,omitempty"`
+
+	Home string `yaml:"home,omitempty"`
+
+	BroadcastMode string `yaml:"broadcast-mode,omitempty"`
 }
 
 // Load the configure file

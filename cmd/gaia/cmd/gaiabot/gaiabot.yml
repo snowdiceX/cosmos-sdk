@@ -12,3 +12,11 @@ validator_address: xxxxxx
 delegator_address: xxx
 
 secure_wallet_address: xxxxxx
+
+amount: 10000000
+
+reserve: 300000
+
+home: /home/qos/.qoscli
+
+broadcast-mode: sync
