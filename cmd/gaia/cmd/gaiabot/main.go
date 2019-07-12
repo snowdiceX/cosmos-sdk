@@ -9,6 +9,7 @@ func main() {
 
 	root := NewRootCommand()
 	root.AddCommand(
+		NewTransferCommand(),
 		NewVersionCommand())
 
 	if err := root.Execute(); err != nil {

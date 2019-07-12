@@ -105,9 +105,7 @@ func starter() {
 
 	secret, err = keys.ReadPassphraseFromStdin(conf.DelegatorAddress)
 	if err != nil {
-		log.Errorf("get passphrase error: %v", err)
-		os.Exit(-1)
-		return
+		log.Error(err)
 	}
 
 	// Instantiate the codec for the command line application
@@ -118,7 +116,6 @@ func starter() {
 	err = doWork(cliCtx, cdc)
 	if err != nil {
 		log.Errorf("work error: %v", err)
-		os.Exit(-1)
 		return
 	}
 
