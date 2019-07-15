@@ -17,6 +17,8 @@ amount: 10000000
 
 reserve: 300000
 
+fees: 100uatom
+
 home: /home/qos/.qoscli
 
 broadcast-mode: sync

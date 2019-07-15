@@ -8,6 +8,7 @@ import (
 
 	"github.com/QOSGroup/cassini/log"
 	"github.com/cihub/seelog"
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/utils"
@@ -80,12 +81,16 @@ func initConfig() error {
 	log.Info("delegator: ", conf.DelegatorAddress)
 	log.Info("wallet: ", conf.WalletAddress)
 	log.Info("broadcast-mode: ", conf.BroadcastMode)
+	log.Info("amount: ", conf.Amount)
+	log.Info("reserve: ", conf.Reserve)
+	log.Info("fees: ", conf.Fees)
 
 	viper.Set("chain-id", conf.ChainID)
 	viper.Set("node", conf.Node)
 	viper.Set("home", conf.Home)
 	viper.Set("from", conf.DelegatorAddress)
 	viper.Set("broadcast-mode", conf.BroadcastMode)
+	viper.Set(client.FlagFees, conf.Fees)
 
 	return nil
 }

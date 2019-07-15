@@ -38,6 +38,8 @@ type Config struct {
 
 	Reserve int64 `yaml:"reserve,omitempty"`
 
+	Fees string `yaml:"fees,omitempty"`
+
 	Coin string `yaml:"coin,omitempty"`
 
 	Home string `yaml:"home,omitempty"`
