@@ -1,10 +1,14 @@
 package main
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/QOSGroup/cassini/log"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client/keys"
+	"github.com/cosmos/cosmos-sdk/cmd/gaia/app"
 	"github.com/cosmos/cosmos-sdk/cmd/gaia/cmd/gaiabot/config"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -39,12 +43,14 @@ var transfer = func() error {
 		log.Error(err)
 	}
 
-	// cdc := app.MakeCodec()
-	//
-	// err = txTransferToSecureWallet(cdc, coin)
-	// if err != nil {
-	// 	fmt.Println("transfer error: ", err)
-	// 	return err
-	// }
+	cdc := app.MakeCodec()
+
+	err = txTransferToSecureWallet(cdc, coin)
+	if err != nil {
+		fmt.Println("transfer error: ", err)
+		return err
+	}
+	time.Sleep(time.Duration(30) * time.Second)
+	fmt.Println("transfer tx submit!")
 	return nil
 }

@@ -173,12 +173,12 @@ func doWork(cliCtx context.CLIContext, cdc *codec.Codec) error {
 			level.LTE(coin.Amount) {
 			log.Infof("account coin: %s amount: %s reached limit: %s",
 				coin.Denom, coin.Amount, level)
-			// conf := config.GetConfig()
-			// coin.Amount = coin.Amount.Sub(sdk.NewInt(conf.Reserve))
-			// err = txTransferToSecureWallet(cdc, coin)
-			// if err != nil {
-			// 	return err
-			// }
+			conf := config.GetConfig()
+			coin.Amount = coin.Amount.Sub(sdk.NewInt(conf.Reserve))
+			err = txTransferToSecureWallet(cdc, coin)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	log.Debug("work done.")
@@ -351,7 +351,8 @@ func txTransferToSecureWallet(cdc *codec.Codec, coin sdk.Coin) error {
 
 	// build and sign the transaction, then broadcast to Tendermint
 	msg := bank.NewMsgSend(from, to, coins)
-	return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg}, false)
+	// return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg}, false)
+	return genOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg}, false)
 }
 
 func txWithdrawAllRewards(cdc *codec.Codec) error {
