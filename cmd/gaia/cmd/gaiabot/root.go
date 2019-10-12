@@ -288,7 +288,9 @@ func queryProposals(cliCtx context.CLIContext) error {
 	}
 
 	if len(matchingProposals) == 0 {
-		return fmt.Errorf("No matching proposals found")
+		// return fmt.Errorf("No matching proposals found")
+		log.Warnf("No matching proposals found")
+		return nil
 	}
 	log.Debugf("query proposals: %s", matchingProposals)
 	for _, p := range matchingProposals {
